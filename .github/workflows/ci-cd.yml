@@ -1,0 +1,76 @@
+name: HazyEats CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-build:
+    name: Typecheck, Unit Tests & Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript typecheck
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Build frontend bundle
+        run: npm run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hazyeats-dist
+          path: dist
+          retention-days: 7
+
+  deploy-netlify:
+    name: Deploy to Netlify Production
+    needs: test-and-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: './dist'
+          functions-dir: './netlify/functions'
+          production-branch: main
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: 'Automated CI/CD deploy from GitHub Actions (${{ github.sha }})'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

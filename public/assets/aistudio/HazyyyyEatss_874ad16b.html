@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HazyEats | Everything Hazyview, in One Black Bag</title>
+  <style>
+    :root {
+      --bg-black: #09090b;
+      --surface-dark: #121215;
+      --surface-card: #18181c;
+      --border-subtle: #27272a;
+      --text-main: #fafafa;
+      --text-muted: #a1a1aa;
+      --gold-flat: #d4af37;
+      --gold-shiny: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+      --gold-shiny-hover: linear-gradient(135deg, #d4af37 0%, #fff9d6 30%, #c59b27 60%, #fcf6ba 100%);
+      --gold-glow: 0 0 20px rgba(212, 175, 55, 0.35);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background-color: var(--bg-black); color: var(--text-main); overflow-x: hidden; }
+
+    /* Shiny Gold Utilities */
+    .gold-text {
+      background: var(--gold-shiny);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+    .btn-gold {
+      background: var(--gold-shiny);
+      color: #09090b;
+      font-weight: 800;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: var(--gold-glow);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-gold:hover {
+      background: var(--gold-shiny-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 0 28px rgba(252, 246, 186, 0.55);
+    }
+    .btn-outline {
+      background: transparent;
+      color: #fcf6ba;
+      border: 1px solid #b38728;
+      padding: 9px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .btn-outline:hover { background: rgba(212, 175, 55, 0.12); }
+
+    /* ZikCode 1.8s Intro Splash */
+    #splash-screen {
+      position: fixed; inset: 0; background: #000; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.4s ease;
+    }
+    .zikcode-wrap { display: flex; font-size: 3.2rem; font-weight: 900; letter-spacing: -1px; }
+    .zik-part {
+      color: #fff;
+      animation: slideUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .code-part {
+      background: var(--gold-shiny);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: slideDown 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes slideUp { from { transform: translateY(70px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes slideDown { from { transform: translateY(-70px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* Navbar */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(9, 9, 11, 0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 14px 5%; display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; font-weight: 900; cursor: pointer; }
+    .bag-icon {
+      width: 34px; height: 34px; border-radius: 8px; background: #111;
+      border: 1.5px solid #d4af37; display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--gold-glow); font-size: 1.1rem;
+    }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+
+    /* Hero Section */
+    .hero {
+      padding: 56px 5% 40px;
+      background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.14), transparent 55%);
+      border-bottom: 1px solid var(--border-subtle);
+      display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 30px; align-items: center;
+    }
+    .hero h1 { font-size: 2.8rem; line-height: 1.12; margin-bottom: 14px; }
+    .hero p { color: var(--text-muted); font-size: 1.05rem; max-width: 600px; margin-bottom: 24px; line-height: 1.5; }
+    .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    /* Luxury Black Bag Card */
+    .bag-showcase {
+      background: linear-gradient(145deg, #141417, #09090b);
+      border: 1px solid #b38728; border-radius: 16px; padding: 24px;
+      text-align: center; box-shadow: var(--gold-glow);
+    }
+    .luxury-bag {
+      width: 110px; height: 125px; margin: 0 auto 14px;
+      background: linear-gradient(160deg, #1f1f23 0%, #050505 100%);
+      border: 2px solid #d4af37; border-radius: 10px 10px 16px 16px;
+      position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      box-shadow: 0 12px 25px rgba(0,0,0,0.8);
+    }
+    .luxury-bag::before {
+      content: ''; position: absolute; top: -18px; width: 46px; height: 18px;
+      border: 3px solid #d4af37; border-bottom: none; border-radius: 20px 20px 0 0;
+    }
+
+    /* Controls & Filters */
+    .controls { padding: 24px 5% 10px; display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center; }
+    .search-box {
+      flex: 1; min-width: 260px; max-width: 440px;
+      background: var(--surface-card); border: 1px solid var(--border-subtle);
+      padding: 11px 16px; border-radius: 10px; color: #fff; font-size: 0.95rem;
+    }
+    .search-box:focus { outline: none; border-color: #d4af37; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      background: var(--surface-card); border: 1px solid var(--border-subtle);
+      color: var(--text-muted); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.88rem; font-weight: 600;
+    }
+    .chip.active { background: var(--gold-shiny); color: #000; border-color: transparent; font-weight: 800; }
+
+    /* Store Grid */
+    .grid {
+      padding: 20px 5% 60px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 20px;
+    }
+    .store-card {
+      background: var(--surface-card); border: 1px solid var(--border-subtle);
+      border-radius: 14px; overflow: hidden; transition: 0.25s; cursor: pointer;
+      display: flex; flex-direction: column;
+    }
+    .store-card:hover { border-color: #d4af37; transform: translateY(-3px); box-shadow: var(--gold-glow); }
+    .store-banner {
+      height: 115px; background: #101012; display: flex; align-items: center; justify-content: center;
+      padding: 16px; position: relative; border-bottom: 1px solid var(--border-subtle);
+    }
+    .store-logo-img { max-height: 72px; max-width: 170px; object-fit: contain; border-radius: 8px; }
+    .community-badge {
+      position: absolute; top: 10px; right: 10px;
+      background: var(--gold-shiny); color: #000; font-size: 0.72rem; font-weight: 800;
+      padding: 3px 8px; border-radius: 6px;
+    }
+    .store-info { padding: 16px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .store-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .store-meta { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* Modals & Drawers */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.82); backdrop-filter: blur(5px);
+      display: none; align-items: center; justify-content: center; z-index: 500; padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface-dark); border: 1px solid #b38728; border-radius: 16px;
+      width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; padding: 26px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .close-btn { background: none; border: none; color: #aaa; font-size: 1.5rem; cursor: pointer; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 10px 12px; border-radius: 8px; background: #09090b;
+      border: 1px solid var(--border-subtle); color: #fff; font-size: 0.95rem;
+    }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #d4af37; }
+
+    /* Google SSO Button */
+    .btn-google {
+      width: 100%; background: #fff; color: #111; border: none; padding: 11px;
+      border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 14px;
+    }
+    .btn-google:hover { background: #f1f5f9; }
+    .divider { text-align: center; color: #71717a; font-size: 0.8rem; margin: 12px 0; position: relative; }
+
+    /* Menu Items */
+    .menu-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; border-bottom: 1px solid var(--border-subtle); gap: 12px;
+    }
+    .menu-item:last-child { border-bottom: none; }
+
+    /* Dashboard Views */
+    .dashboard-panel { display: none; padding: 30px 5%; min-height: 75vh; }
+    .dashboard-panel.active { display: block; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--surface-card); border: 1px solid var(--border-subtle); padding: 18px; border-radius: 12px; }
+    .stat-val { font-size: 1.7rem; font-weight: 800; margin-top: 4px; }
+    .order-card {
+      background: var(--surface-card); border: 1px solid var(--border-subtle);
+      border-radius: 12px; padding: 18px; margin-bottom: 14px;
+    }
+    .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; }
+    .badge-pending { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+    .badge-ready { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+    .badge-delivered { background: rgba(161, 161, 170, 0.2); color: #e4e4e7; }
+
+    /* Floating Cart Bar */
+    .cart-float {
+      position: fixed; bottom: 20px; right: 20px; z-index: 200;
+      background: var(--gold-shiny); color: #000; padding: 14px 22px;
+      border-radius: 50px; font-weight: 900; cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.85), var(--gold-glow);
+      display: none; align-items: center; gap: 10px;
+    }
+    .cart-float.visible { display: flex; }
+
+    footer {
+      border-top: 1px solid var(--border-subtle); padding: 26px 5%;
+      text-align: center; color: var(--text-muted); font-size: 0.85rem;
+    }
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 2.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ZikCode 1.8s Intro -->
+  <div id="splash-screen">
+    <div class="zikcode-wrap">
+      <span class="zik-part">Zik</span><span class="code-part">Code</span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <header>
+    <div class="brand" onclick="switchView('marketplace')">
+      <div class="bag-icon">🛍️</div>
+      <span>Hazy<span class="gold-text">Eats</span></span>
+    </div>
+    <div class="nav-actions" id="nav-actions"></div>
+  </header>
+
+  <!-- MAIN MARKETPLACE VIEW -->
+  <main id="view-marketplace">
+    <section class="hero">
+      <div>
+        <h1>Everything Hazyview, <span class="gold-text">in one black bag.</span></h1>
+        <p>Order from KFC, Chicken Licken, Debonairs, Woolworths Food, and local Shabalala kota &amp; fries vendors in a single checkout. One driver, one R20 fee, delivered straight to your doorstep.</p>
+        <div class="hero-cta">
+          <button class="btn-gold" onclick="openAuthModal('signup', 'buyer')">Order Now</button>
+          <button class="btn-outline" onclick="openAuthModal('signup', 'driver')">Drive &amp; Earn</button>
+          <button class="btn-outline" onclick="openAuthModal('signup', 'store')">Partner Store / Vendor</button>
+        </div>
+      </div>
+      <div class="bag-showcase">
+        <div class="luxury-bag">
+          <span style="font-size:0.75rem; font-weight:900; letter-spacing:1px;" class="gold-text">HAZYEATS</span>
+          <span style="font-size:0.6rem; color:#888; margin-top:2px;">SHABALALA VIP</span>
+        </div>
+        <div style="font-weight:700; font-size:0.95rem;">Multi-Store Single Delivery</div>
+        <div style="color:var(--text-muted); font-size:0.82rem; margin-top:4px;">Combine chains + local spots in 1 order</div>
+      </div>
+    </section>
+
+    <section class="controls">
+      <input type="text" id="search-input" class="search-box" placeholder="Search KFC, Kota, Mama Zodwa, Pizza, Chips..." oninput="renderStores()" />
+      <div class="chips" id="category-chips">
+        <button class="chip active" onclick="setCategory('All', this)">All</button>
+        <button class="chip" onclick="setCategory('Fast food', this)">Fast food</button>
+        <button class="chip" onclick="setCategory('Pizza', this)">Pizza</button>
+        <button class="chip" onclick="setCategory('Restaurant', this)">Restaurant</button>
+        <button class="chip" onclick="setCategory('Groceries', this)">Groceries</button>
+        <button class="chip" onclick="setCategory('Community', this)">Community</button>
+      </div>
+    </section>
+
+    <section class="grid" id="stores-grid"></section>
+  </main>
+
+  <!-- ROLE DASHBOARD VIEW -->
+  <section id="view-dashboard" class="dashboard-panel"></section>
+
+  <!-- Floating Multi-Store Cart Button -->
+  <div id="cart-float" class="cart-float" onclick="openCartModal()">
+    <span>🛍️ Black Bag (<span id="cart-count">0</span>)</span>
+    <span>•</span>
+    <span id="cart-total-float">R0.00</span>
+  </div>
+
+  <!-- Store Menu Modal -->
+  <div id="menu-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="menu-modal-title">Store Menu</h2>
+        <button class="close-btn" onclick="closeModal('menu-modal')">&times;</button>
+      </div>
+      <p id="menu-modal-sub" style="color:var(--text-muted); font-size:0.85rem; margin-bottom:14px;"></p>
+      <div id="menu-items-list"></div>
+    </div>
+  </div>
+
+  <!-- Checkout / Cart Modal -->
+  <div id="cart-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Your <span class="gold-text">HazyEats</span> Black Bag</h2>
+        <button class="close-btn" onclick="closeModal('cart-modal')">&times;</button>
+      </div>
+      <div id="cart-items-container"></div>
+      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border-subtle);">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px; color:var(--text-muted);">
+          <span>Multi-Store Flat Delivery (Shabalala)</span><span>R20.00</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:1.15rem; font-weight:800; margin-bottom:14px;">
+          <span>Total</span><span class="gold-text" id="cart-grand-total">R0.00</span>
+        </div>
+        <div class="form-group">
+          <label>Delivery Address in Shabalala / Hazyview</label>
+          <input type="text" id="delivery-address" placeholder="e.g. House 412, Shabalala Trust (Near Primary School)" />
+        </div>
+        <button class="btn-gold" style="width:100%;" onclick="placeMultiStoreOrder()">Place Multi-Store Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal (Sign In / Sign Up / Google SSO) -->
+  <div id="auth-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="auth-title">Welcome to HazyEats</h2>
+        <button class="close-btn" onclick="closeModal('auth-modal')">&times;</button>
+      </div>
+
+      <button class="btn-google" onclick="openGoogleChooser()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="divider">— OR USE EMAIL &amp; PASSWORD —</div>
+
+      <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+        <div id="signup-fields" style="display:none;">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="auth-name" placeholder="e.g. Nkosinathi Mokoena" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number (WhatsApp / Call)</label>
+            <input type="tel" id="auth-phone" placeholder="e.g. 072 555 1234" />
+          </div>
+          <div class="form-group">
+            <label>Account Role</label>
+            <select id="auth-role" onchange="toggleRoleExtras()">
+              <option value="buyer">Customer (Order Food to Shabalala)</option>
+              <option value="driver">Driver / Delivery Partner (Car / Motorbike)</option>
+              <option value="store">Store / Community Vendor</option>
+              <option value="admin">System Admin</option>
+            </select>
+          </div>
+          <div id="driver-extra" style="display:none;">
+            <div class="form-group">
+              <label>Vehicle Type &amp; Registration</label>
+              <input type="text" id="auth-vehicle" placeholder="e.g. Honda Ace 125 Bike / VW Polo - MP 442 GP" />
+            </div>
+          </div>
+          <div id="store-extra" style="display:none;">
+            <div class="form-group">
+              <label>Store / Business Name</label>
+              <input type="text" id="auth-store-name" placeholder="e.g. KFC Hazyview or Shabalala Kota Hub" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="auth-email" required placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="auth-pass" required placeholder="••••••••" />
+        </div>
+
+        <button type="submit" class="btn-gold" style="width:100%;" id="auth-submit-btn">Sign In</button>
+      </form>
+
+      <p style="text-align:center; margin-top:14px; font-size:0.85rem; color:var(--text-muted);" id="auth-switch-text"></p>
+      <div style="margin-top:14px; padding:10px; background:#09090b; border-radius:8px; font-size:0.78rem; color:#a1a1aa;">
+        <strong>Quick Demo Logins (Password: Demo@1234):</strong><br/>
+        Buyer: <code>buyer@hazyeats.demo</code> • Driver: <code>driver@hazyeats.demo</code><br/>
+        KFC Store: <code>store@hazyeats.demo</code> • Admin: <code>admin@hazyeats.demo</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Account Chooser Modal -->
+  <div id="google-modal" class="modal-backdrop">
+    <div class="modal" style="max-width:400px;">
+      <div class="modal-header">
+        <h3>Sign in with Google</h3>
+        <button class="close-btn" onclick="closeModal('google-modal')">&times;</button>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">Choose an account to continue to <strong>HazyEats</strong></p>
+      <div class="order-card" style="cursor:pointer;" onclick="completeGoogleLogin('Nkosinathi (Google)', 'nkosinathi.shabalala@gmail.com', 'buyer')">
+        <strong>Nkosinathi M.</strong><br/><span style="font-size:0.82rem; color:var(--text-muted);">nkosinathi.shabalala@gmail.com • Buyer</span>
+      </div>
+      <div class="order-card" style="cursor:pointer;" onclick="completeGoogleLogin('Sipho Driver (Google)', 'sipho.rides@gmail.com', 'driver')">
+        <strong>Sipho Dlamini</strong><br/><span style="font-size:0.82rem; color:var(--text-muted);">sipho.rides@gmail.com • Driver (Bike)</span>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>Or enter any Gmail address to sign in instantly:</label>
+        <div style="display:flex; gap:8px;">
+          <input type="email" id="custom-gmail" placeholder="yourname@gmail.com" />
+          <button class="btn-gold" onclick="customGoogleLogin()">Go</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <strong>HazyEats</strong> prototype by <span class="gold-text">ZikCode</span> • Connecting Hazyview &amp; Shabalala.<br/>
+    LocalStorage Backend Active: Your accounts, menus, and multi-store orders are saved in this browser.
+  </footer>
+
+  <script>
+    /* =========================================================
+       1. PERSISTENT LOCALSTORAGE BACKEND & INITIAL DATA SEED
+       ========================================================= */
+    const DB_KEYS = {
+      USERS: 'hazyeats_users_v3',
+      STORES: 'hazyeats_stores_v3',
+      ORDERS: 'hazyeats_orders_v3',
+      SESSION: 'hazyeats_session_v3',
+      CART: 'hazyeats_cart_v3'
+    };
+
+    const INITIAL_STORES = [
+      {
+        id: 'kfc', name: 'KFC', category: 'Fast food', time: '30–45 min', isCommunity: false,
+        logo: 'https://thumb.wikimedia.org/wikipedia/sco/thumb/b/bf/KFC_logo.svg/3840px-KFC_logo.svg.png?utm_source=sco.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+        menu: [
+          { id: 'k1', name: 'Streetwise 2 with Chips', price: 46.90 },
+          { id: 'k2', name: 'Streetwise 3 with Pap/Chips', price: 62.90 },
+          { id: 'k3', name: '9 Piece Family Treat Bucket', price: 189.90 },
+          { id: 'k4', name: 'Zinger Wings (10 pcs)', price: 79.90 }
+        ]
+      },
+      {
+        id: 'debonairs', name: 'Debonairs Pizza', category: 'Pizza', time: '35–50 min', isCommunity: false,
+        logo: 'https://play-lh.googleusercontent.com/YEEX7Yr2rUJehodZI9I8a-UPG8aWLF3btcN0fKsSGh87bCu3qVaFW_VPVDK1CvkgU56TLqYqtuW7ndoaza589Q',
+        menu: [
+          { id: 'd1', name: 'Large Crammed-Crust Triple-Decker', price: 189.90 },
+          { id: 'd2', name: 'Large Something Meaty Pizza', price: 149.90 },
+          { id: 'd3', name: 'Medium Chicken & Mushroom', price: 99.90 }
+        ]
+      },
+      {
+        id: 'mcdonalds', name: "McDonald's", category: 'Fast food', time: '30–45 min', isCommunity: false,
+        logo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/McDonald%27s_logo.svg/3840px-McDonald%27s_logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail',
+        menu: [
+          { id: 'm1', name: 'Big Mac Medium Meal', price: 84.90 },
+          { id: 'm2', name: 'McFeast Spicy Meal', price: 96.90 },
+          { id: 'm3', name: '20 Chicken McNuggets Sharebox', price: 114.90 }
+        ]
+      },
+      {
+        id: 'romans', name: "Roman's Pizza", category: 'Pizza', time: '35–50 min', isCommunity: false,
+        logo: 'https://play-lh.googleusercontent.com/eC59UkNel1D2TEYZEBdJHTEhAe_bt4i-U2tYRJ6Aq8UDpgNtO6iFb-QTfHZ6MnEEgcAbWR1ZJ63HvQD-ab6V',
+        menu: [
+          { id: 'r1', name: 'Large Double Cheese & Pepperoni', price: 129.90 },
+          { id: 'r2', name: 'Large Chicken Mayo Pizza', price: 134.90 }
+        ]
+      },
+      {
+        id: 'spur', name: 'Spur', category: 'Restaurant', time: '40–55 min', isCommunity: false,
+        logo: 'https://spurcorporation.com/wp-content/uploads/2024/02/Spur-Transparent.png',
+        menu: [
+          { id: 's1', name: 'Cheddamelt Schnitzel & Chips', price: 139.90 },
+          { id: 's2', name: '400g Full Rack Pork Ribs', price: 219.90 }
+        ]
+      },
+      {
+        id: 'steers', name: 'Steers', category: 'Fast food', time: '30–45 min', isCommunity: false,
+        logo: 'https://cavendish.co.za/wp-content/uploads/Steers.jpg',
+        menu: [
+          { id: 'st1', name: 'King Steer Burger & Medium Chips', price: 94.90 },
+          { id: 'st2', name: 'Wacky Wednesday 2 Burgers Deal', price: 69.90 }
+        ]
+      },
+      {
+        id: 'chickenlicken', name: 'Chicken Licken', category: 'Fast food', time: '30–45 min', isCommunity: false,
+        logo: 'https://chickenlicken.co.za/images/CL-small-logo.svg',
+        menu: [
+          { id: 'cl1', name: 'Hotwings Max 8 pcs & Soul Fries', price: 78.00 },
+          { id: 'cl2', name: 'Soul Sister Party 6 pcs', price: 95.00 },
+          { id: 'cl3', name: 'Big John Burger Meal', price: 54.00 }
+        ]
+      },
+      {
+        id: 'burgerking', name: 'Burger King', category: 'Fast food', time: '30–45 min', isCommunity: false,
+        logo: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Burger_King_logo_%281999%E2%80%932020%29.svg/1280px-Burger_King_logo_%281999%E2%80%932020%29.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail',
+        menu: [
+          { id: 'bk1', name: 'Whopper Medium Meal', price: 89.90 },
+          { id: 'bk2', name: 'Big King XXL Meal', price: 109.90 }
+        ]
+      },
+      {
+        id: 'spar', name: 'Spar Hazyview', category: 'Groceries', time: '40–55 min', isCommunity: false,
+        logo: 'https://thespargroup.com/wp-content/uploads/photo-gallery/SPAR_Vertical_Logo.jpeg?bwg=1544795791',
+        menu: [
+          { id: 'sp1', name: 'Spar Famous Large Hot Slap Chips', price: 32.00 },
+          { id: 'sp2', name: 'Full Rotisserie Grilled Chicken', price: 94.90 },
+          { id: 'sp3', name: '2L Coca-Cola + Fresh Bread Bundle', price: 44.00 }
+        ]
+      },
+      {
+        id: 'wimpy', name: 'Wimpy', category: 'Fast food', time: '35–50 min', isCommunity: false,
+        logo: 'https://wimpy.co.za/site/images/svg-elements/wimpy-logo-red.svg',
+        menu: [
+          { id: 'w1', name: 'Champion Breakfast & Filter Coffee', price: 79.90 },
+          { id: 'w2', name: 'Double Cheese Burger & Chips', price: 92.90 }
+        ]
+      },
+      {
+        id: 'woolworths', name: 'Woolworths Food', category: 'Groceries', time: '40–60 min', isCommunity: false,
+        logo: 'https://1000logos.net/wp-content/uploads/2018/07/Woolworths-Logo.jpg',
+        menu: [
+          { id: 'ww1', name: 'Butter Chicken & Basmati Rice Meal', price: 89.90 },
+          { id: 'ww2', name: 'Chuckle Milk 1L + Belgian Chocolate', price: 74.90 }
+        ]
+      },
+      {
+        id: 'oceanbasket', name: 'Ocean Basket', category: 'Restaurant', time: '40–55 min', isCommunity: false,
+        logo: 'https://www.oceanbasket.com/wp-content/uploads/2022/09/square-logo.png',
+        menu: [
+          { id: 'ob1', name: 'Famous Fish & Chips (Hake)', price: 99.00 },
+          { id: 'ob2', name: 'Platter for 1 (Prawns, Hake, Calamari)', price: 165.00 }
+        ]
+      },
+      {
+        id: 'pioneers', name: 'Pioneers Grill', category: 'Restaurant', time: '35–50 min', isCommunity: false,
+        logo: '',
+        menu: [
+          { id: 'pg1', name: '300g Flame-Grilled Rump Steak', price: 155.00 },
+          { id: 'pg2', name: 'Peri-Peri Half Chicken & Chips', price: 115.00 }
+        ]
+      },
+      {
+        id: 'kuka', name: 'Kuka Cafe', category: 'Restaurant', time: '35–50 min', isCommunity: false,
+        logo: '',
+        menu: [
+          { id: 'kk1', name: 'Gourmet Wagyu Burger & Wedges', price: 125.00 },
+          { id: 'kk2', name: 'Creamy Chicken Pasta', price: 110.00 }
+        ]
+      },
+      {
+        id: 'zakheles', name: "Zakhele's Kota & Chips", category: 'Community', time: '25–40 min', isCommunity: true,
+        logo: '',
+        menu: [
+          { id: 'z1', name: 'Classic Kota (Polony, Cheese, Chips, Atchar)', price: 25.00 },
+          { id: 'z2', name: 'Special Kota (Russian, Egg, Cheese, Chips)', price: 35.00 },
+          { id: 'z3', name: 'Full House King Kota (Beef Patty, Russian, Cheese)', price: 45.00 },
+          { id: 'z4', name: 'Small Slap Chips', price: 25.00 },
+          { id: 'z5', name: 'Medium Slap Chips', price: 35.00 },
+          { id: 'z6', name: 'Large Slap Chips', price: 45.00 },
+          { id: 'z7', name: '330ml Soft Drink Can', price: 15.00 }
+        ]
+      },
+      {
+        id: 'mamazodwa', name: "Mama Zodwa's Kitchen", category: 'Community', time: '25–40 min', isCommunity: true,
+        logo: '',
+        menu: [
+          { id: 'mz1', name: 'Kasi Fries & Russian Plate', price: 35.00 },
+          { id: 'mz2', name: 'Mama Zodwa Loaded Kota', price: 40.00 },
+          { id: 'mz3', name: 'Pap & Grilled Beef + Chakalaka Plate', price: 55.00 },
+          { id: 'mz4', name: 'Rice, Pork & Chicken Mixture Plate', price: 65.00 },
+          { id: 'mz5', name: '2L Assorted Soft Drink', price: 28.00 }
+        ]
+      }
+    ];
+
+    function initBackend() {
+      if (!localStorage.getItem(DB_KEYS.USERS)) {
+        const defaultUsers = [
+          { name: 'Thabo Buyer', email: 'buyer@hazyeats.demo', pass: 'Demo@1234', role: 'buyer', phone: '071 234 5678' },
+          { name: 'Sipho Driver', email: 'driver@hazyeats.demo', pass: 'Demo@1234', role: 'driver', phone: '072 987 6543', vehicle: 'Honda 125cc Bike' },
+          { name: 'KFC Hazyview Manager', email: 'store@hazyeats.demo', pass: 'Demo@1234', role: 'store', storeName: 'KFC' },
+          { name: 'ZikCode System Admin', email: 'admin@hazyeats.demo', pass: 'Demo@1234', role: 'admin' }
+        ];
+        localStorage.setItem(DB_KEYS.USERS, JSON.stringify(defaultUsers));
+      }
+      if (!localStorage.getItem(DB_KEYS.STORES)) {
+        localStorage.setItem(DB_KEYS.STORES, JSON.stringify(INITIAL_STORES));
+      }
+      if (!localStorage.getItem(DB_KEYS.ORDERS)) {
+        localStorage.setItem(DB_KEYS.ORDERS, JSON.stringify([]));
+      }
+    }
+
+    const getUsers = () => JSON.parse(localStorage.getItem(DB_KEYS.USERS) || '[]');
+    const saveUsers = (u) => localStorage.setItem(DB_KEYS.USERS, JSON.stringify(u));
+    const getStores = () => JSON.parse(localStorage.getItem(DB_KEYS.STORES) || '[]');
+    const saveStores = (s) => localStorage.setItem(DB_KEYS.STORES, JSON.stringify(s));
+    const getOrders = () => JSON.parse(localStorage.getItem(DB_KEYS.ORDERS) || '[]');
+    const saveOrders = (o) => localStorage.setItem(DB_KEYS.ORDERS, JSON.stringify(o));
+    const getSession = () => JSON.parse(localStorage.getItem(DB_KEYS.SESSION) || 'null');
+    const setSession = (s) => localStorage.setItem(DB_KEYS.SESSION, JSON.stringify(s));
+    const getCart = () => JSON.parse(localStorage.getItem(DB_KEYS.CART) || '[]');
+    const saveCart = (c) => { localStorage.setItem(DB_KEYS.CART, JSON.stringify(c)); updateCartBadge(); };
+
+    /* =========================================================
+       2. SPLASH SCREEN (1.8 SECONDS)
+       ========================================================= */
+    window.addEventListener('DOMContentLoaded', () => {
+      initBackend();
+      renderNav();
+      renderStores();
+      updateCartBadge();
+      setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        splash.style.opacity = '0';
+        setTimeout(() => splash.remove(), 400);
+      }, 1700);
+    });
+
+    /* =========================================================
+       3. MARKETPLACE & BRAND LOGOS
+       ========================================================= */
+    let activeCategory = 'All';
+
+    function setCategory(cat, btn) {
+      activeCategory = cat;
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      renderStores();
+    }
+
+    function renderStores() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const stores = getStores();
+      const grid = document.getElementById('stores-grid');
+
+      const filtered = stores.filter(s => {
+        const matchCat = activeCategory === 'All' || s.category === activeCategory;
+        const matchQuery = s.name.toLowerCase().includes(query) ||
+          s.menu.some(m => m.name.toLowerCase().includes(query));
+        return matchCat && matchQuery;
+      });
+
+      grid.innerHTML = filtered.map(store => {
+        const visual = store.logo
+          ? `<img src="${store.logo}" alt="${store.name} Logo" class="store-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+             <div style="display:none; font-size:1.3rem; font-weight:900;" class="gold-text">${store.name}</div>`
+          : `<div style="font-size:1.3rem; font-weight:900; text-align:center;" class="gold-text">${store.name}</div>`;
+
+        return `
+          <div class="store-card" onclick="openStoreMenu('${store.id}')">
+            <div class="store-banner">
+              ${visual}
+              ${store.isCommunity ? `<span class="community-badge">SHABALALA LOCAL</span>` : ''}
+            </div>
+            <div class="store-info">
+              <div class="store-title">
+                <span>${store.name}</span>
+                <span class="gold-text" style="font-size:0.85rem;">★ 4.8</span>
+              </div>
+              <div class="store-meta">R20.00 flat delivery • ${store.time} • ${store.category}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openStoreMenu(storeId) {
+      const store = getStores().find(s => s.id === storeId);
+      if (!store) return;
+      document.getElementById('menu-modal-title').innerHTML = `${store.name} <span class="gold-text">Menu</span>`;
+      document.getElementById('menu-modal-sub').textContent = `${store.category} • Combine items from multiple stores in one R20 delivery.`;
+
+      document.getElementById('menu-items-list').innerHTML = store.menu.map(item => `
+        <div class="menu-item">
+          <div>
+            <div style="font-weight:700;">${item.name}</div>
+            <div class="gold-text" style="font-size:0.92rem;">R${item.price.toFixed(2)}</div>
+          </div>
+          <button class="btn-gold" style="padding:7px 14px; font-size:0.85rem;" onclick="addToCart('${store.id}', '${store.name.replace(/'/g, "\\'")}', '${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price})">+ Add</button>
+        </div>
+      `).join('');
+      document.getElementById('menu-modal').classList.add('open');
+    }
+
+    /* =========================================================
+       4. MULTI-STORE BLACK BAG CART & CHECKOUT
+       ========================================================= */
+    function addToCart(storeId, storeName, itemId, itemName, price) {
+      const cart = getCart();
+      const existing = cart.find(c => c.itemId === itemId);
+      if (existing) existing.qty += 1;
+      else cart.push({ storeId, storeName, itemId, itemName, price, qty: 1 });
+      saveCart(cart);
+    }
+
+    function updateCartBadge() {
+      const cart = getCart();
+      const count = cart.reduce((sum, i) => sum + i.qty, 0);
+      const subTotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      const floatEl = document.getElementById('cart-float');
+      document.getElementById('cart-count').textContent = count;
+      document.getElementById('cart-total-float').textContent = `R${(subTotal + (count ? 20 : 0)).toFixed(2)}`;
+      if (count > 0) floatEl.classList.add('visible');
+      else floatEl.classList.remove('visible');
+    }
+
+    function openCartModal() {
+      const cart = getCart();
+      const container = document.getElementById('cart-items-container');
+      if (!cart.length) {
+        container.innerHTML = '<p style="color:var(--text-muted);">Your black bag is empty.</p>';
+      } else {
+        container.innerHTML = cart.map((item, idx) => `
+          <div class="menu-item">
+            <div>
+              <div style="font-size:0.75rem;" class="gold-text">${item.storeName}</div>
+              <div style="font-weight:700;">${item.itemName} (x${item.qty})</div>
+              <div style="font-size:0.85rem; color:var(--text-muted);">R${(item.price * item.qty).toFixed(2)}</div>
+            </div>
+            <button class="btn-outline" style="padding:4px 10px;" onclick="removeCartItem(${idx})">Remove</button>
+          </div>
+        `).join('');
+      }
+      const subTotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      document.getElementById('cart-grand-total').textContent = `R${(subTotal + 20).toFixed(2)}`;
+      document.getElementById('cart-modal').classList.add('open');
+    }
+
+    function removeCartItem(index) {
+      const cart = getCart();
+      cart.splice(index, 1);
+      saveCart(cart);
+      openCartModal();
+    }
+
+    function placeMultiStoreOrder() {
+      const user = getSession();
+      if (!user) {
+        closeModal('cart-modal');
+        openAuthModal('signin', 'buyer');
+        alert('Please sign in or create an account to place your order.');
+        return;
+      }
+      const cart = getCart();
+      if (!cart.length) return;
+      const address = document.getElementById('delivery-address').value.trim() || 'Shabalala Trust, Hazyview';
+      const uniqueStores = [...new Set(cart.map(c => c.storeName))];
+      const storeReadiness = {};
+      uniqueStores.forEach(s => storeReadiness[s] = false);
+
+      const newOrder = {
+        id: 'ORD-' + Math.floor(1000 + Math.random() * 9000),
+        buyerEmail: user.email,
+        buyerName: user.name,
+        address,
+        items: cart,
+        stores: uniqueStores,
+        storeReadiness,
+        total: cart.reduce((s, i) => s + i.price * i.qty, 0) + 20,
+        status: 'Preparing at Stores',
+        driverName: null,
+        createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      const orders = getOrders();
+      orders.unshift(newOrder);
+      saveOrders(orders);
+      saveCart([]);
+      closeModal('cart-modal');
+      switchView('dashboard');
+    }
+
+    /* =========================================================
+       5. AUTHENTICATION, SIGN UP & GOOGLE SIGN-IN
+       ========================================================= */
+    let authMode = 'signin';
+
+    function openAuthModal(mode = 'signin', defaultRole = 'buyer') {
+      authMode = mode;
+      const isSignup = mode === 'signup';
+      document.getElementById('auth-title').textContent = isSignup ? 'Create HazyEats Account' : 'Sign In to HazyEats';
+      document.getElementById('signup-fields').style.display = isSignup ? 'block' : 'none';
+      document.getElementById('auth-submit-btn').textContent = isSignup ? 'Create Account' : 'Sign In';
+      document.getElementById('auth-role').value = defaultRole;
+      toggleRoleExtras();
+
+      document.getElementById('auth-switch-text').innerHTML = isSignup
+        ? `Already have an account? <a href="#" class="gold-text" onclick="openAuthModal('signin')">Sign In</a>`
+        : `New to HazyEats? <a href="#" class="gold-text" onclick="openAuthModal('signup')">Create an Account</a>`;
+
+      document.getElementById('auth-modal').classList.add('open');
+    }
+
+    function toggleRoleExtras() {
+      const role = document.getElementById('auth-role').value;
+      document.getElementById('driver-extra').style.display = role === 'driver' ? 'block' : 'none';
+      document.getElementById('store-extra').style.display = role === 'store' ? 'block' : 'none';
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim().toLowerCase();
+      const pass = document.getElementById('auth-pass').value;
+      const users = getUsers();
+
+      if (authMode === 'signup') {
+        if (users.some(u => u.email === email)) {
+          alert('An account with this email already exists. Please sign in.');
+          return;
+        }
+        const newUser = {
+          name: document.getElementById('auth-name').value.trim() || email.split('@')[0],
+          phone: document.getElementById('auth-phone').value.trim(),
+          role: document.getElementById('auth-role').value,
+          vehicle: document.getElementById('auth-vehicle').value.trim(),
+          storeName: document.getElementById('auth-store-name').value.trim() || 'KFC',
+          email,
+          pass
+        };
+        users.push(newUser);
+        saveUsers(users);
+        setSession(newUser);
+      } else {
+        const found = users.find(u => u.email === email && u.pass === pass);
+        if (!found) {
+          alert('Invalid email or password. Try a demo account or sign up!');
+          return;
+        }
+        setSession(found);
+      }
+
+      closeModal('auth-modal');
+      renderNav();
+      switchView('dashboard');
+    }
+
+    function openGoogleChooser() {
+      closeModal('auth-modal');
+      document.getElementById('google-modal').classList.add('open');
+    }
+
+    function completeGoogleLogin(name, email, role) {
+      const users = getUsers();
+      let user = users.find(u => u.email === email);
+      if (!user) {
+        user = { name, email, role, pass: 'GOOGLE_SSO', phone: 'Verified via Google' };
+        users.push(user);
+        saveUsers(users);
+      }
+      setSession(user);
+      closeModal('google-modal');
+      renderNav();
+      switchView('dashboard');
+    }
+
+    function customGoogleLogin() {
+      const gmail = document.getElementById('custom-gmail').value.trim().toLowerCase();
+      if (!gmail || !gmail.includes('@')) return alert('Enter a valid Gmail address.');
+      completeGoogleLogin(gmail.split('@')[0], gmail, 'buyer');
+    }
+
+    function logout() {
+      setSession(null);
+      renderNav();
+      switchView('marketplace');
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    /* =========================================================
+       6. NAVIGATION & ROLE DASHBOARDS (BUYER, STORE, DRIVER, ADMIN)
+       ========================================================= */
+    function renderNav() {
+      const user = getSession();
+      const nav = document.getElementById('nav-actions');
+      if (!user) {
+        nav.innerHTML = `
+          <button class="btn-outline" onclick="openAuthModal('signin')">Sign In</button>
+          <button class="btn-gold" onclick="openAuthModal('signup')">Sign Up</button>
+        `;
+      } else {
+        nav.innerHTML = `
+          <button class="btn-outline" onclick="switchView('marketplace')">Browse Stores</button>
+          <button class="btn-gold" onclick="switchView('dashboard')">${user.role.toUpperCase()} Dashboard</button>
+          <button class="btn-outline" onclick="logout()">Logout</button>
+        `;
+      }
+    }
+
+    function switchView(view) {
+      const market = document.getElementById('view-marketplace');
+      const dash = document.getElementById('view-dashboard');
+      if (view === 'dashboard' && getSession()) {
+        market.style.display = 'none';
+        dash.classList.add('active');
+        renderDashboard();
+      } else {
+        dash.classList.remove('active');
+        market.style.display = 'block';
+        renderStores();
+      }
+    }
+
+    function renderDashboard() {
+      const user = getSession();
+      const dash = document.getElementById('view-dashboard');
+      const orders = getOrders();
+      const stores = getStores();
+      const users = getUsers();
+
+      if (user.role === 'buyer') {
+        const myOrders = orders.filter(o => o.buyerEmail === user.email);
+        dash.innerHTML = `
+          <h2>Welcome back, <span class="gold-text">${user.name}</span></h2>
+          <p style="color:var(--text-muted); margin-bottom:20px;">Track your multi-store orders to Shabalala in real time.</p>
+          <button class="btn-gold" style="margin-bottom:20px;" onclick="switchView('marketplace')">+ Start New Multi-Store Order</button>
+          ${myOrders.length ? myOrders.map(o => `
+            <div class="order-card">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <strong>${o.id} • ${o.stores.join(' + ')}</strong>
+                <span class="badge ${o.status === 'Delivered' ? 'badge-delivered' : 'badge-pending'}">${o.status}</span>
+              </div>
+              <div style="font-size:0.88rem; color:var(--text-muted);">
+                Items: ${o.items.map(i => `${i.qty}x ${i.itemName} (${i.storeName})`).join(', ')}<br/>
+                Address: ${o.address} • Total: <strong class="gold-text">R${o.total.toFixed(2)}</strong>
+                ${o.driverName ? `<br/>Assigned Driver: <strong>${o.driverName}</strong>` : ''}
+              </div>
+            </div>
+          `).join('') : '<p style="color:var(--text-muted);">No orders yet. Click above to order from Hazyview!</p>'}
+        `;
+      }
+
+      if (user.role === 'store') {
+        const myStore = user.storeName || 'KFC';
+        const storeOrders = orders.filter(o => o.stores.includes(myStore));
+        dash.innerHTML = `
+          <h2>Store Console: <span class="gold-text">${myStore}</span></h2>
+          <p style="color:var(--text-muted); margin-bottom:20px;">Orders sent automatically when customers check out. Mark your store's portion ready so the driver can collect.</p>
+          ${storeOrders.length ? storeOrders.map(o => {
+            const isReady = o.storeReadiness[myStore];
+            const storeItems = o.items.filter(i => i.storeName === myStore);
+            return `
+              <div class="order-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <strong>${o.id}</strong> for ${o.buyerName} (${o.createdAt})<br/>
+                    <span style="color:var(--text-muted); font-size:0.9rem;">Prepare: ${storeItems.map(i => `${i.qty}x ${i.itemName}`).join(', ')}</span>
+                  </div>
+                  ${isReady
+                    ? '<span class="badge badge-ready">✓ Marked Ready</span>'
+                    : `<button class="btn-gold" onclick="markStoreReady('${o.id}', '${myStore}')">Mark Ready for Pickup</button>`}
+                </div>
+              </div>
+            `;
+          }).join('') : '<p style="color:var(--text-muted);">No active orders for this store yet.</p>'}
+        `;
+      }
+
+      if (user.role === 'driver') {
+        dash.innerHTML = `
+          <h2>Driver Dispatch: <span class="gold-text">${user.name}</span></h2>
+          <p style="color:var(--text-muted); margin-bottom:20px;">Multi-store rule: Pickup unlocks once <strong>every store</strong> in an order marks their food ready.</p>
+          ${orders.length ? orders.map(o => {
+            const allReady = Object.values(o.storeReadiness).every(Boolean);
+            return `
+              <div class="order-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                  <div>
+                    <strong>${o.id}</strong> • Route: <strong>${o.stores.join(' → ')} → ${o.address}</strong><br/>
+                    <span style="font-size:0.85rem; color:var(--text-muted);">Store Status: ${Object.entries(o.storeReadiness).map(([k, v]) => `${k}: ${v ? 'Ready' : 'Preparing'}`).join(' | ')}</span>
+                  </div>
+                  <div>
+                    ${o.status === 'Delivered'
+                      ? '<span class="badge badge-delivered">Delivered (R20 Earned)</span>'
+                      : o.driverName === user.name
+                        ? `<button class="btn-gold" onclick="completeDelivery('${o.id}')">Confirm Delivered to Customer</button>`
+                        : allReady
+                          ? `<button class="btn-gold" onclick="acceptDelivery('${o.id}')">Accept Pickup (R20 Fee)</button>`
+                          : '<span class="badge badge-pending">Waiting on Stores</span>'}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('') : '<p style="color:var(--text-muted);">No active orders in queue.</p>'}
+        `;
+      }
+
+      if (user.role === 'admin') {
+        const totalRev = orders.reduce((s, o) => s + o.total, 0);
+        dash.innerHTML = `
+          <h2>ZikCode <span class="gold-text">Admin Command Center</span></h2>
+          <div class="stat-grid">
+            <div class="stat-card"><div style="color:var(--text-muted); font-size:0.85rem;">Total GMV</div><div class="stat-val gold-text">R${totalRev.toFixed(2)}</div></div>
+            <div class="stat-card"><div style="color:var(--text-muted); font-size:0.85rem;">Active Stores</div><div class="stat-val">${stores.length}</div></div>
+            <div class="stat-card"><div style="color:var(--text-muted); font-size:0.85rem;">Registered Users</div><div class="stat-val">${users.length}</div></div>
+            <div class="stat-card"><div style="color:var(--text-muted); font-size:0.85rem;">Total Orders</div><div class="stat-val">${orders.length}</div></div>
+          </div>
+
+          <div class="order-card" style="max-width:540px;">
+            <h3 style="margin-bottom:12px;">Onboard New Shabalala / Hazyview Vendor</h3>
+            <form onsubmit="onboardVendor(event)">
+              <div class="form-group"><label>Vendor / Business Name</label><input type="text" id="v-name" required placeholder="e.g. Shabalala Bunny Chow Express" /></div>
+              <div class="form-group"><label>Category</label>
+                <select id="v-cat"><option>Community</option><option>Fast food</option><option>Restaurant</option><option>Groceries</option></select>
+              </div>
+              <div class="form-group"><label>Signature Dish Name</label><input type="text" id="v-dish" required placeholder="e.g. Quarter Mutton Bunny Chow" /></div>
+              <div class="form-group"><label>Price (ZAR)</label><input type="number" id="v-price" required placeholder="45" /></div>
+              <button type="submit" class="btn-gold">Add Vendor &amp; Publish Live</button>
+            </form>
+          </div>
+        `;
+      }
+    }
+
+    function markStoreReady(orderId, storeName) {
+      const orders = getOrders();
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        order.storeReadiness[storeName] = true;
+        if (Object.values(order.storeReadiness).every(Boolean)) {
+          order.status = 'Ready for Driver Pickup';
+        }
+        saveOrders(orders);
+        renderDashboard();
+      }
+    }
+
+    function acceptDelivery(orderId) {
+      const user = getSession();
+      const orders = getOrders();
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        order.driverName = user.name;
+        order.status = 'Out for Delivery to Shabalala';
+        saveOrders(orders);
+        renderDashboard();
+      }
+    }
+
+    function completeDelivery(orderId) {
+      const orders = getOrders();
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        order.status = 'Delivered';
+        saveOrders(orders);
+        renderDashboard();
+      }
+    }
+
+    function onboardVendor(e) {
+      e.preventDefault();
+      const stores = getStores();
+      const name = document.getElementById('v-name').value.trim();
+      stores.push({
+        id: 'vendor-' + Date.now(),
+        name,
+        category: document.getElementById('v-cat').value,
+        time: '25–40 min',
+        isCommunity: true,
+        logo: '',
+        menu: [{ id: 'm-' + Date.now(), name: document.getElementById('v-dish').value.trim(), price: parseFloat(document.getElementById('v-price').value) }]
+      });
+      saveStores(stores);
+      alert(`${name} is now live on HazyEats!`);
+      renderDashboard();
+    }
+  </script>
+</body>
+</html>
