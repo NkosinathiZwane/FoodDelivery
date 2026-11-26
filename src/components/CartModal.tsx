@@ -1,117 +1,78 @@
 import { useState, type FormEvent } from 'react';
-import type { CartItem, CheckoutPaymentInput, PaymentMethod } from '../types.ts';
-import { formatZarFromCents } from '../utils/marketplace.ts';
-import {
-  PAYMENT_METHODS,
-  SA_EFT_BANKS,
-  calculateCartTotals,
-  validateCheckoutInput,
-  validatePaymentInput,
-} from '../utils/orders.ts';
+import type { CartItem, Profile } from '../types';
+import { calculateCartTotals, formatZar, validateCheckoutForm } from '../utils/format';
 
 interface CartModalProps {
   open: boolean;
   cart: CartItem[];
+  profile: Profile | null;
   submitting: boolean;
-  serverError: string | null;
   onClose: () => void;
-  onUpdateQty: (itemId: string, delta: number) => void;
-  onRemoveItem: (itemId: string) => void;
-  onSubmitOrder: (address: string, payment: CheckoutPaymentInput) => Promise<void>;
+  onUpdateQty: (menuItemId: string, delta: number) => void;
+  onRemoveItem: (menuItemId: string) => void;
+  onCheckout: (address: string, phone: string, notes: string) => Promise<void>;
+  onRequireSignIn: () => void;
 }
 
 export function CartModal({
   open,
   cart,
+  profile,
   submitting,
-  serverError,
   onClose,
   onUpdateQty,
   onRemoveItem,
-  onSubmitOrder,
+  onCheckout,
+  onRequireSignIn,
 }: CartModalProps) {
   const [address, setAddress] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
-  const [cardHolder, setCardHolder] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [eftBank, setEftBank] = useState<string>(SA_EFT_BANKS[0]);
-  const [snapCode, setSnapCode] = useState('HAZY-QR-8421');
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [phone, setPhone] = useState(profile?.phone || '');
+  const [notes, setNotes] = useState('');
+  const [errorText, setErrorText] = useState('');
 
   if (!open) return null;
 
-  const totals = calculateCartTotals(cart);
-  const errorToShow = validationError || serverError;
+  const { subtotal, deliveryFee, total } = calculateCartTotals(cart);
+  const resolvedPhone = phone || profile?.phone || '';
 
-  const fillTestCard = () => {
-    setCardHolder('Thabo Shabalala');
-    setCardNumber('4242 4242 4242 4242');
-    setCardExpiry('08/29');
-    setCardCvv('424');
-    setValidationError(null);
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setValidationError(null);
+    setErrorText('');
 
-    const check = validateCheckoutInput(
-      cart.map((c) => ({ itemId: c.itemId, qty: c.qty })),
-      address
-    );
-    if (!check.valid) {
-      setValidationError(check.error);
+    if (!profile) {
+      onClose();
+      onRequireSignIn();
       return;
     }
 
-    const paymentInput: CheckoutPaymentInput = {
-      method: paymentMethod,
-      cardHolder,
-      cardNumber,
-      cardExpiry,
-      cardCvv,
-      eftBank,
-      snapCode,
-    };
-    const paymentCheck = validatePaymentInput(paymentInput);
-    if (!paymentCheck.valid) {
-      setValidationError(paymentCheck.error);
+    const validationError = validateCheckoutForm(address, resolvedPhone, cart);
+    if (validationError) {
+      setErrorText(validationError);
       return;
     }
 
-    await onSubmitOrder(check.address, paymentInput);
-  };
-
-  const submitLabel = submitting
-    ? 'Processing Payment & Sending Order...'
-    : paymentMethod === 'cash'
-    ? `Confirm Cash Order (${formatZarFromCents(totals.totalCents)})`
-    : `Pay ${formatZarFromCents(totals.totalCents)} & Place Order`;
+    try {
+      await onCheckout(address, resolvedPhone, notes);
+      setNotes('');
+    } catch (err) {
+      setErrorText(err instanceof Error ? err.message : 'Unable to place your order.');
+    }
+  }
 
   return (
     <div
       id="cart-modal"
-      className="modal-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="cart-modal-title"
+      className="modal-backdrop open"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div className="modal">
         <div className="modal-header">
-          <h2 id="cart-modal-title">
+          <h2>
             Your <span className="gold-text">HazyEats</span> Black Bag
           </h2>
-          <button
-            type="button"
-            className="close-btn"
-            aria-label="Close black bag"
-            onClick={onClose}
-          >
+          <button type="button" className="close-btn" onClick={onClose} aria-label="Close bag">
             &times;
           </button>
         </div>
@@ -121,7 +82,7 @@ export function CartModal({
             <p style={{ color: 'var(--text-muted)' }}>Your black bag is empty.</p>
           ) : (
             cart.map((item) => (
-              <div key={item.itemId} className="menu-item">
+              <div key={item.menuItemId} className="menu-item">
                 <div>
                   <div style={{ fontSize: '0.75rem' }} className="gold-text">
                     {item.storeName}
@@ -130,34 +91,33 @@ export function CartModal({
                     {item.itemName} (x{item.qty})
                   </div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    {formatZarFromCents(item.priceCents * item.qty)}
+                    {formatZar(item.price * item.qty)}
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <button
                     type="button"
                     className="btn-outline"
-                    style={{ padding: '4px 9px' }}
-                    aria-label={`Decrease quantity of ${item.itemName}`}
-                    onClick={() => onUpdateQty(item.itemId, -1)}
+                    style={{ padding: '4px 10px' }}
+                    onClick={() => onUpdateQty(item.menuItemId, -1)}
+                    aria-label={`Decrease ${item.itemName}`}
                   >
-                    −
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-outline"
-                    style={{ padding: '4px 9px' }}
-                    aria-label={`Increase quantity of ${item.itemName}`}
-                    onClick={() => onUpdateQty(item.itemId, 1)}
-                  >
-                    +
+                    -
                   </button>
                   <button
                     type="button"
                     className="btn-outline"
                     style={{ padding: '4px 10px' }}
-                    aria-label={`Remove ${item.itemName}`}
-                    onClick={() => onRemoveItem(item.itemId)}
+                    onClick={() => onUpdateQty(item.menuItemId, 1)}
+                    aria-label={`Increase ${item.itemName}`}
+                  >
+                    +
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-danger-outline"
+                    style={{ padding: '4px 10px' }}
+                    onClick={() => onRemoveItem(item.menuItemId)}
                   >
                     Remove
                   </button>
@@ -169,214 +129,89 @@ export function CartModal({
 
         <form
           onSubmit={handleSubmit}
-          style={{
-            marginTop: '16px',
-            paddingTop: '14px',
-            borderTop: '1px solid var(--border-subtle)',
-          }}
+          style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--border-subtle)' }}
         >
           <div
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-              marginBottom: '6px',
+              marginBottom: 6,
               color: 'var(--text-muted)',
+              fontSize: '0.9rem',
+            }}
+          >
+            <span>Items Subtotal</span>
+            <span>{formatZar(subtotal)}</span>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginBottom: 8,
+              color: 'var(--text-muted)',
+              fontSize: '0.9rem',
             }}
           >
             <span>Multi-Store Flat Delivery (Shabalala)</span>
-            <span>{formatZarFromCents(totals.deliveryFeeCents)}</span>
+            <span>{formatZar(deliveryFee)}</span>
           </div>
-
           <div
             style={{
               display: 'flex',
               justifyContent: 'space-between',
               fontSize: '1.15rem',
               fontWeight: 800,
-              marginBottom: '14px',
+              marginBottom: 14,
             }}
           >
             <span>Total</span>
             <span className="gold-text" id="cart-grand-total">
-              {formatZarFromCents(totals.totalCents)}
+              {formatZar(total)}
             </span>
           </div>
 
-          {errorToShow && <div className="form-error">{errorToShow}</div>}
-
           <div className="form-group">
-            <label htmlFor="delivery-address">
-              Delivery Address in Shabalala / Hazyview
-            </label>
+            <label htmlFor="delivery-address">Delivery Address in Shabalala / Hazyview</label>
             <input
-              type="text"
               id="delivery-address"
-              placeholder="e.g. House 412, Shabalala Trust (Near Primary School)"
+              type="text"
               value={address}
-              onChange={(e) => {
-                setAddress(e.target.value);
-                if (validationError) setValidationError(null);
-              }}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="e.g. House 412, Shabalala Trust (Near Primary School)"
             />
           </div>
 
           <div className="form-group">
-            <label id="payment-options-label">Payment Method</label>
-            <div
-              className="payment-methods-grid"
-              role="radiogroup"
-              aria-labelledby="payment-options-label"
-            >
-              {PAYMENT_METHODS.map((option) => {
-                const selected = paymentMethod === option.id;
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={selected}
-                    className={`payment-option-btn ${selected ? 'active' : ''}`}
-                    onClick={() => {
-                      setPaymentMethod(option.id);
-                      setValidationError(null);
-                    }}
-                  >
-                    <span className="payment-option-title">{option.label}</span>
-                    <span className="payment-option-sub">{option.subtitle}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <label htmlFor="delivery-phone">Contact Phone (Call / WhatsApp)</label>
+            <input
+              id="delivery-phone"
+              type="tel"
+              value={resolvedPhone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="e.g. 072 555 1234"
+            />
           </div>
 
-          {paymentMethod === 'card' && (
-            <div className="payment-details-panel">
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '8px',
-                  marginBottom: '10px',
-                }}
-              >
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Secure Card Payment
-                </span>
-                <button
-                  type="button"
-                  className="btn-outline"
-                  style={{ padding: '4px 10px', fontSize: '0.75rem' }}
-                  onClick={fillTestCard}
-                >
-                  Use Test Card
-                </button>
-              </div>
-              <div className="form-group">
-                <label htmlFor="pay-card-holder">Cardholder Name</label>
-                <input
-                  type="text"
-                  id="pay-card-holder"
-                  placeholder="Name on card"
-                  value={cardHolder}
-                  onChange={(e) => setCardHolder(e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="pay-card-number">Card Number</label>
-                <input
-                  type="text"
-                  id="pay-card-number"
-                  inputMode="numeric"
-                  placeholder="4242 4242 4242 4242"
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                />
-              </div>
-              <div className="form-row-2">
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label htmlFor="pay-card-expiry">Expiry (MM/YY)</label>
-                  <input
-                    type="text"
-                    id="pay-card-expiry"
-                    placeholder="08/29"
-                    value={cardExpiry}
-                    onChange={(e) => setCardExpiry(e.target.value)}
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label htmlFor="pay-card-cvv">CVV</label>
-                  <input
-                    type="password"
-                    id="pay-card-cvv"
-                    inputMode="numeric"
-                    maxLength={4}
-                    placeholder="424"
-                    value={cardCvv}
-                    onChange={(e) => setCardCvv(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="form-group">
+            <label htmlFor="delivery-notes">Delivery Notes (Optional)</label>
+            <input
+              id="delivery-notes"
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Grey gate next to spaza shop"
+            />
+          </div>
 
-          {paymentMethod === 'eft' && (
-            <div className="payment-details-panel">
-              <div className="form-group" style={{ marginBottom: '6px' }}>
-                <label htmlFor="pay-eft-bank">Select Your South African Bank</label>
-                <select
-                  id="pay-eft-bank"
-                  value={eftBank}
-                  onChange={(e) => setEftBank(e.target.value)}
-                >
-                  {SA_EFT_BANKS.map((bank) => (
-                    <option key={bank} value={bank}>
-                      {bank}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
-                Instant EFT verifies settlement immediately so participating restaurants can start
-                preparing your order right away.
-              </p>
-            </div>
-          )}
-
-          {paymentMethod === 'snapscan' && (
-            <div className="payment-details-panel">
-              <div className="form-group" style={{ marginBottom: '8px' }}>
-                <label htmlFor="pay-snap-code">SnapScan / Zapper Payment Reference</label>
-                <input
-                  type="text"
-                  id="pay-snap-code"
-                  value={snapCode}
-                  onChange={(e) => setSnapCode(e.target.value)}
-                />
-              </div>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
-                Scan &amp; confirm {formatZarFromCents(totals.totalCents)} to dispatch paid order
-                tickets to each restaurant immediately.
-              </p>
-            </div>
-          )}
-
-          {paymentMethod === 'cash' && (
-            <div className="payment-details-panel">
-              <p style={{ fontSize: '0.82rem', color: '#fcf6ba', margin: 0 }}>
-                Have {formatZarFromCents(totals.totalCents)} cash ready for your driver upon
-                delivery in Shabalala / Hazyview.
-              </p>
-            </div>
-          )}
+          {errorText && <div className="form-error">{errorText}</div>}
 
           <button
             type="submit"
             className="btn-gold"
-            style={{ width: '100%', marginTop: '6px' }}
+            style={{ width: '100%' }}
             disabled={submitting || cart.length === 0}
           >
-            {submitLabel}
+            {submitting ? 'Placing Multi-Store Order...' : 'Place Multi-Store Order'}
           </button>
         </form>
       </div>

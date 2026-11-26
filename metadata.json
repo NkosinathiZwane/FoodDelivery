@@ -1,6 +1,6 @@
 {
   "name": "HazyEats",
-  "description": "Everything Hazyview, in one black bag. Multi-store food and grocery delivery connecting Hazyview chains and Shabalala local vendors.",
+  "description": "Everything Hazyview, in one black bag. Order from Hazyview chains and Shabalala local vendors in a single R20 delivery.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }
